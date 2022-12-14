@@ -1,7 +1,12 @@
+use std::borrow::BorrowMut;
+use std::fmt::{Display, Formatter};
 use tracing::warn;
 use tracing::info;
 use indexmap::IndexMap;
 
+
+/// An enum representing any argument data we might have
+/// TODO: figure out some way of dynamically handling arbitrary types
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
 pub enum ArgData {
     String(String),
@@ -11,6 +16,13 @@ pub enum ArgData {
     Undefined
 }
 
+impl Display for ArgData {
+    fn fmt(self: &ArgData, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(&mut f.borrow_mut(), "{:#?}", self)
+    }
+}
+
+/// A struct representing an argument, holding both the `ArgData` data itself and a `used` state
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
 pub struct Arg {
     pub data: ArgData,
@@ -30,8 +42,15 @@ impl Arg {
     }
 }
 
+impl Display for Arg {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(&mut f.borrow_mut(), "{}", self.data.clone())
+    }
+}
+
 macro_rules! generate_get {
     ($func:ident, $args:ident, $data_type:ident, $arg_data_type:path) => {
+        /// Data-type specific getter
         pub fn $func(&mut $args, arg_name: &str) -> Option<$data_type> {
             match &$args.get(arg_name)?.data {
                 $arg_data_type(arg) => { Some(arg.clone()) },
@@ -47,7 +66,11 @@ pub struct Args {
     pub args: IndexMap<String, Arg>
 }
 
+
+/// A `Vec` of arguments, representing a collection of any data you might find in `ArgData`
 impl Args {
+
+    /// Get an argument from its lookup string
     pub fn get(&mut self, string: &str) -> Option<&Arg> {
         let arg = self.args.get(string);
         if arg.is_none() {
@@ -80,6 +103,10 @@ impl Args {
         for (_arg_name, arg) in &mut self.args {
             arg.used = false;
         }
+    }
+
+    pub fn insert(&mut self, arg_name: &str, arg_data: ArgData) {
+        self.args.insert(arg_name.to_owned(), Arg::from_argdata(arg_data));
     }
 }
 
