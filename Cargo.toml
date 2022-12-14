@@ -1,0 +1,13 @@
+[package]
+author = "Alexandria P."
+name = "dynarg"
+version = "0.1.0"
+edition = "2021"
+description = "A simple mechanism for dynamic robust argument handling"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tracing = "0.1.37"
+tracing-subscriber = "0.3.16"
+indexmap = "1.9.2"
