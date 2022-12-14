@@ -105,12 +105,19 @@ impl Args {
         }
     }
 
+    #[inline]
     pub fn insert(&mut self, arg_name: &str, arg_data: ArgData) {
         self.args.insert(arg_name.to_owned(), Arg::from_argdata(arg_data));
     }
-}
 
-// fn call_dynarg_func(args: &mut Arguments, func: fn (&mut Arguments)) {
-//     func(args);
-//     args.all_used()
-// }
+
+    #[inline]
+    pub fn insert_arg(&mut self, arg_name: &str, arg: Arg) {
+        self.args.insert(arg_name.to_owned(), arg);
+    }
+
+    #[inline]
+    pub fn remove(&mut self, arg_name: &str) {
+        self.args.remove(arg_name);
+    }
+}
