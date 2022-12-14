@@ -1,3 +1,9 @@
+# dynarg
+
+A simple dynamic argument system
+
+### Example
+```rust
 /// Where normally you'd need to have a fixed set of arguments, each of which would be roughly fixed types
 /// -- you can dynamically push arguments on the fly instead.
 /// This is useful when you need a consistent function signature for different types of functions,
@@ -24,3 +30,9 @@ fn main() {
     // Clear all the used flags on args
     args.reset_status();
 }
+```
+
+## Todo
+
+- [ ] Implement custom enum handling (allowing the user to implement their own `ArgData`)
+- [ ] Add more example code
