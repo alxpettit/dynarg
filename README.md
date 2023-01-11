@@ -47,3 +47,4 @@ fn main() {
 - [ ] Add `snafu`
 - [ ] Add convenience functions (e.g. `get_string()`, `get_int()`)
 - [ ] Properly document gotchas
+- [ ] Ass variant without `used()` functionality.
