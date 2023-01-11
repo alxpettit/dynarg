@@ -49,5 +49,7 @@ fn main() {
 
 ## Todo
 
-- [ ] Implement custom enum handling (allowing the user to implement their own `ArgData`)
-- [ ] Add more example code
+- [ ] Replace `Option`s with `Result`s such that it's possible to identify whether the argument name didn't exist, or the type was wrong
+- [ ] Add `snafu`
+- [ ] Add convenience functions (e.g. `get_string()`, `get_int()`)
+- [ ] Properly document gotchas
