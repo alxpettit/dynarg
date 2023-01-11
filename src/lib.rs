@@ -9,8 +9,7 @@ use num::Integer;
 /// An enum representing any argument data we might have
 /// TODO: figure out some way of dynamically handling arbitrary types
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
-pub enum ArgData<I> where I: Integer, F {
-    String(String),
+pub enum ArgData<I> where I: Integer {
     Integer(I),
     Bool(bool),
     #[default]
