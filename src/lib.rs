@@ -75,16 +75,24 @@ impl <I, F>Args<I, F> where I: Integer + Clone + Debug + Default, F: Float + Clo
 
     /// Get an argument from its lookup string
     pub fn get(&mut self, string: &str) -> Option<&Arg<I, F>> {
-        let arg = self.args.get(string);
-        if arg.is_none() {
-            info!("Attempted to get \"{}\", but could not", string);
+        match self.args.get_mut(string) {
+            None => {
+                info!("Attempted to get \"{}\", but could not", string);
+                None
+            },
+    
+            Some(arg) => {
+                arg.used = true;
+                Some(arg)
+            }
+
         }
-        arg
     }
 
     // TODO: replace with macro that can dynamically infer types from
     generate_get!(get_string, self, String, ArgData::String);
-    generate_get!(get_i32, self, I, ArgData::Integer);
+    generate_get!(get_int, self, I, ArgData::Integer);
+    generate_get!(get_float, self, F, ArgData::Float);
     generate_get!(get_bool, self, bool, ArgData::Bool);
 
     pub fn defaults() -> Self {
