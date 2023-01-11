@@ -10,6 +10,7 @@ use num::Integer;
 /// TODO: figure out some way of dynamically handling arbitrary types
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
 pub enum ArgData<I> where I: Integer {
+    String(String),
     Integer(I),
     Bool(bool),
     #[default]
