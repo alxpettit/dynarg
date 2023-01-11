@@ -14,27 +14,39 @@ pub enum DynArgError<'a> {
     NotOfType { name: &'a str },
 }
 
+/// For storing a single argument.
+/// Stores a `Box<>` to argument variable, as well as a `used` flag.
 struct Arg {
     data: ArgData,
+    #[cfg(feature = "used")]
     used: bool,
 }
 
 impl Arg {
+    /// Create new Arg struct, moving ownership of Box pointer
+    /// to an internal dynamically typed Any-trait variable.
     fn new(arg: Box<dyn Any>) -> Self {
         Self {
             data: ArgData(arg),
+            #[cfg(feature = "used")]
             used: false,
         }
     }
 
+    /// Like `new()`, but accepts an `ArgData()` instead of a raw `Box<dyn Any>`
     fn from_argdata(arg_data: ArgData) -> Self {
         Self {
             data: arg_data,
+            #[cfg(feature = "used")]
             used: false,
         }
     }
 
-    fn get<T>(&mut self) -> Result<&T, DynArgError>
+    #[cfg(feature = "used")]
+    /// Like `get()`, but marks the value as `used`.
+    /// Because it changes `self`, it requires mutable access to self.
+    /// This, of course, may make it unusable for some use cases.
+    fn poke<T>(&mut self) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
@@ -49,6 +61,26 @@ impl Arg {
         }
     }
 
+    /// Retrieve a struct's inner value.
+    /// It's recommended to _explicitly_ specify type via generics, e.g.:
+    /// ```rust
+    /// use dynarg::Args;
+    /// let mut arg = Arg::new::<i32>(42);
+    /// let arg = arg.get::<i32>();
+    /// ```
+    fn get<T>(&self) -> Result<&T, DynArgError>
+    where
+        T: 'static,
+    {
+        match self.data.0.downcast_ref::<T>() {
+            Some(value) => Ok(value),
+            None => Err(NotOfType {
+                name: type_name::<T>(),
+            }),
+        }
+    }
+
+    #[cfg(feature = "used")]
     fn used(&self) -> bool {
         self.used
     }
@@ -69,24 +101,59 @@ macro_rules! insert_get_fn {
     };
 }
 
+/// Stores an `IndexMap` of `Args`. See examples.
 impl<'a> Args<'a> {
+    /// A convenience function for making a new empty `Args()`.
+    /// In truth, it just calls `default()`
     fn new() -> Self {
         Self::default()
     }
-    pub fn get<T>(&mut self, name: &'a str) -> Result<&T, DynArgError>
+
+    /// Initializes internal hashmap with a given capacity, to reduce required memory allocations.
+    /// Potentially useful if you're planning to call `.push()` _a lot_.
+    fn with_capacity(capacity: usize) -> Self {
+        Self(IndexMap::with_capacity(capacity))
+    }
+
+    #[cfg(feature = "used")]
+    /// Like `get()`, but marks the value as `used`.
+    /// Because it changes `self`, it requires mutable access to self.
+    /// This, of course, may make it unusable for some use cases.
+    pub fn poke<T>(&mut self, name: &'a str) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
         match self.0.get_mut(name) {
             None => Err(NoSuchArg { name }),
+            Some(arg) => Ok(arg.poke::<T>()?),
+        }
+    }
+
+    /// Retrieve a value by name. It's recommended to _explicitly_ specify type via generics, e.g.:
+    /// ```rust
+    /// use dynarg::Args;
+    /// let mut args = Args::default();
+    /// args.insert_i32("meaning_of_life", 42);
+    /// let arg = args.get::<i32>("meaning_of_life");
+    /// ```
+    pub fn get<T>(&self, name: &'a str) -> Result<&T, DynArgError>
+    where
+        T: 'static,
+    {
+        match self.0.get(name) {
+            None => Err(NoSuchArg { name }),
             Some(arg) => Ok(arg.get::<T>()?),
         }
     }
 
+    /// Inserts a value with a dynamic type. Value must be wrapped in a `Box<>` pointer.
+    /// BTW, when will the `box` keyword syntax be stable? That would make a lot of code more elegant.
     pub fn insert(&mut self, name: &'a str, value: Box<dyn Any>) {
         self.0.insert(name, Arg::new(value));
     }
 
+    #[cfg(feature = "used")]
+    /// Returns true if every argument is marked as "used". Returns false otherwise.
     pub fn all_used(&self) -> bool {
         for (_arg_name, arg) in &self.0 {
             if !arg.used {
@@ -96,7 +163,9 @@ impl<'a> Args<'a> {
         return true;
     }
 
-    pub fn reset_status(&mut self) {
+    #[cfg(feature = "used")]
+    /// Resets the used status of every argument in the IndexMap.
+    pub fn reset_used_status(&mut self) {
         for (_arg_name, arg) in &mut self.0 {
             arg.used = false;
         }
@@ -119,6 +188,7 @@ mod tests {
         let a = 5;
         let mut arg = Arg::new(Box::new(a));
         assert_eq!(arg.get::<i32>(), Ok(&5));
+        #[cfg(feature = "used")]
         assert_eq!(arg.used(), true);
 
         let test = "apple";

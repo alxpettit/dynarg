@@ -43,5 +43,9 @@ fn main() {
 
 ## Todo
 
-- [ ] Properly document gotchas
-- [ ] Ass variant without `used()` functionality.
+- [x] Custom type handling
+- [x] Replace `Option`s with `Result`s such that it's possible to identify whether the argument name didn't exist, or the type was wrong
+- [x] Add `snafu`
+- [x] Add convenience functions (e.g. `get_string()`, `get_int()`)
+- [x] Properly document gotchas
+- [x] Add variant without `used()` functionality.

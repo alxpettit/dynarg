@@ -8,9 +8,9 @@ fn draw(args: &mut Args) {
     if let Ok(greeting) = args.get_string("greeting") {
         println!("{} world", greeting);
     }
-    if let Ok(arg) = args.get::<Fruit>("fruit_to_draw") {
+    if let Ok(arg) = args.poke::<Fruit>("fruit_to_draw") {
         println!("I will draw {}!", arg.0);
-        if let Ok(size) = args.get::<f32>("size") {
+        if let Ok(size) = args.poke::<f32>("size") {
             println!("with a size of {}", size);
         }
     } else {
@@ -35,5 +35,5 @@ fn main() {
         println!("Warning! I didn't use all my arguments D:");
     }
     // Clear all the used flags on args
-    args.reset_status();
+    args.reset_used_status();
 }
