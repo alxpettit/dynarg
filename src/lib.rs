@@ -61,7 +61,7 @@ impl<'a> Args<'a> {
     fn new() -> Self {
         Self::default()
     }
-    pub fn get<T>(&mut self, name: &'static str) -> Result<&T, DynArgError>
+    pub fn get<T>(&mut self, name: &'a str) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
@@ -88,6 +88,14 @@ impl<'a> Args<'a> {
         for (_arg_name, arg) in &mut self.0 {
             arg.used = false;
         }
+    }
+
+    pub fn insert_string(&mut self, name: &'a str, value: String) {
+        self.0.insert(name, Arg::new(Box::new(value)));
+    }
+
+    pub fn get_string(&mut self, name: &'a str) -> Result<&String, DynArgError> {
+        self.get::<String>(name)
     }
 }
 
