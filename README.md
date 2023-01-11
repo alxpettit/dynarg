@@ -65,6 +65,10 @@ fn main() {
 }
 ```
 
+[Github available here.](https://github.com/alxpettit/dynarg)
+
+PRs welcome :)
+
 ## Todo
 
 - [x] Custom type handling
