@@ -2,7 +2,7 @@
 /// -- you can dynamically push arguments on the fly instead.
 /// This is useful when you need a consistent function signature for different types of functions,
 /// each needing different arguments
-fn draw(args: &mut dynarg::Args) {
+fn draw(args: &mut dynarg::Args<i64>) {
     if let Some(arg) = args.get("thing_to_draw") {
         println!("I will draw {}!", arg);
     } else {

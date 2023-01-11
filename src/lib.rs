@@ -4,11 +4,12 @@ use tracing::warn;
 use tracing::info;
 use indexmap::IndexMap;
 use std::fmt::Debug;
+use num::Integer;
 
 /// An enum representing any argument data we might have
 /// TODO: figure out some way of dynamically handling arbitrary types
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
-pub enum ArgData<I> where I: Clone + Eq + Debug + Default {
+pub enum ArgData<I> where I: Integer, F {
     String(String),
     Integer(I),
     Bool(bool),
@@ -16,7 +17,7 @@ pub enum ArgData<I> where I: Clone + Eq + Debug + Default {
     Undefined
 }
 
-impl <I>Display for ArgData<I> where I: Clone + Eq + Debug + Default {
+impl <I>Display for ArgData<I> where I: Integer + Debug {
     fn fmt(self: &ArgData<I>, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(&mut f.borrow_mut(), "{:#?}", self)
     }
@@ -24,12 +25,12 @@ impl <I>Display for ArgData<I> where I: Clone + Eq + Debug + Default {
 
 /// A struct representing an argument, holding both the `ArgData` data itself and a `used` state
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
-pub struct Arg<I> where I: Clone + Eq + Debug + Default {
+pub struct Arg<I> where I: Integer {
     pub data: ArgData<I>,
     pub used: bool
 }
 
-impl <I>Arg<I> where I: Default + Clone + Eq + Debug {
+impl <I>Arg<I> where I: Default + Integer {
     pub fn new() -> Self {
         Self::default()
     }
@@ -42,7 +43,7 @@ impl <I>Arg<I> where I: Default + Clone + Eq + Debug {
     }
 }
 
-impl <I>Display for Arg<I> where I: Eq + Clone + Debug + Default {
+impl <I>Display for Arg<I> where I: Integer + Clone + Debug {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(&mut f.borrow_mut(), "{}", self.data.clone())
     }
@@ -62,13 +63,13 @@ macro_rules! generate_get {
 
 
 #[derive(Clone, PartialEq, Eq, Debug, Default)]
-pub struct Args<I> where I: Clone + Eq + Debug + Default {
+pub struct Args<I> where I: Integer {
     pub args: IndexMap<String, Arg<I>>
 }
 
 
 /// A `Vec` of arguments, representing a collection of any data you might find in `ArgData`
-impl <I>Args<I> where I: Clone + Eq + Debug + Default {
+impl <I>Args<I> where I: Integer + Clone + Debug + Default {
 
     /// Get an argument from its lookup string
     pub fn get(&mut self, string: &str) -> Option<&Arg<I>> {
