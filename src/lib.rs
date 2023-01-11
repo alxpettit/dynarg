@@ -55,9 +55,9 @@ impl Arg {
 }
 
 #[derive(Default)]
-pub struct Args(IndexMap<String, Arg>);
+pub struct Args<'a>(IndexMap<&'a str, Arg>);
 
-impl<'a> Args {
+impl<'a> Args<'a> {
     fn new() -> Self {
         Self::default()
     }
@@ -71,11 +71,8 @@ impl<'a> Args {
         }
     }
 
-    pub fn insert<S>(&mut self, name: S, value: Box<dyn Any>)
-    where
-        S: Into<String>,
-    {
-        self.0.insert(name.into(), Arg::new(value));
+    pub fn insert(&mut self, name: &'a str, value: Box<dyn Any>) {
+        self.0.insert(name, Arg::new(value));
     }
 
     pub fn all_used(&self) -> bool {
@@ -121,7 +118,8 @@ mod tests {
     #[test]
     fn test_args() {
         let mut args = Args::default();
-        args.insert("number".to_string(), Box::new(6));
+        let arg_name = String::from("number");
+        args.insert(arg_name.as_str(), Box::new(6));
         let result = args.get::<i32>("number");
         assert_eq!(result, Ok(&6));
 
