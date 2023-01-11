@@ -34,16 +34,18 @@ impl Arg {
         }
     }
 
-    fn get<T>(&mut self) -> Option<&T>
+    fn get<T>(&mut self) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
         match self.data.0.downcast_ref::<T>() {
             Some(value) => {
                 self.used = true;
-                Some(value)
+                Ok(value)
             }
-            None => None,
+            None => Err(NotOfType {
+                name: type_name::<T>().to_string(),
+            }),
         }
     }
 
@@ -67,12 +69,7 @@ impl Args {
             None => Err(NoSuchArg {
                 name: name.to_string(),
             }),
-            Some(arg) => match arg.get::<T>() {
-                Some(value) => Ok(value),
-                None => Err(NotOfType {
-                    name: type_name::<T>().to_string(),
-                }),
-            },
+            Some(arg) => Ok(arg.get::<T>()?),
         }
     }
 
@@ -117,16 +114,16 @@ mod tests {
     fn test_arg() {
         let a = 5;
         let mut arg = Arg::new(Box::new(a));
-        assert_eq!(arg.get::<i32>(), Some(&5));
+        assert_eq!(arg.get::<i32>(), Ok(&5));
         assert_eq!(arg.used(), true);
 
         let test = "apple";
         let mut arg = Arg::new(Box::new(test));
-        assert_eq!(arg.get::<&str>(), Some(&"apple"));
+        assert_eq!(arg.get::<&str>(), Ok(&"apple"));
 
         let test2 = String::from("apple");
         let mut arg2 = Arg::new(Box::new(test2));
-        assert_eq!(arg2.get::<String>(), Some(&"apple".to_string()));
+        assert_eq!(arg2.get::<String>(), Ok(&"apple".to_string()));
     }
 
     #[test]
