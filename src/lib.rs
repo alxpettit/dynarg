@@ -5,36 +5,38 @@ use tracing::info;
 use indexmap::IndexMap;
 use std::fmt::Debug;
 use num::Integer;
+use num::Float;
 
 /// An enum representing any argument data we might have
 /// TODO: figure out some way of dynamically handling arbitrary types
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
-pub enum ArgData<I> where I: Integer {
+pub enum ArgData<I, F> where I: Integer, F: Float {
     String(String),
     Integer(I),
+    Float(F),
     Bool(bool),
     #[default]
     Undefined
 }
 
-impl <I>Display for ArgData<I> where I: Integer + Debug {
-    fn fmt(self: &ArgData<I>, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl <I, F>Display for ArgData<I, F> where I: Integer + Debug, F: Float + Debug {
+    fn fmt(self: &ArgData<I, F>, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(&mut f.borrow_mut(), "{:#?}", self)
     }
 }
 
 /// A struct representing an argument, holding both the `ArgData` data itself and a `used` state
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Default)]
-pub struct Arg<I> where I: Integer {
-    pub data: ArgData<I>,
+pub struct Arg<I, F> where I: Integer, F: Float {
+    pub data: ArgData<I, F>,
     pub used: bool
 }
 
-impl <I>Arg<I> where I: Default + Integer {
+impl <I, F>Arg<I, F> where I: Default + Integer, F: Default + Float {
     pub fn new() -> Self {
         Self::default()
     }
-    pub fn from_argdata(arg_data: ArgData<I>) -> Self {
+    pub fn from_argdata(arg_data: ArgData<I, F>) -> Self {
         Self {
             data: arg_data,
             used: false
@@ -43,7 +45,7 @@ impl <I>Arg<I> where I: Default + Integer {
     }
 }
 
-impl <I>Display for Arg<I> where I: Integer + Clone + Debug {
+impl <I, F>Display for Arg<I, F> where I: Integer + Clone + Debug, F: Float + Clone + Debug {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(&mut f.borrow_mut(), "{}", self.data.clone())
     }
@@ -63,16 +65,16 @@ macro_rules! generate_get {
 
 
 #[derive(Clone, PartialEq, Eq, Debug, Default)]
-pub struct Args<I> where I: Integer {
-    pub args: IndexMap<String, Arg<I>>
+pub struct Args<I, F> where I: Integer, F: Float {
+    pub args: IndexMap<String, Arg<I, F>>
 }
 
 
 /// A `Vec` of arguments, representing a collection of any data you might find in `ArgData`
-impl <I>Args<I> where I: Integer + Clone + Debug + Default {
+impl <I, F>Args<I, F> where I: Integer + Clone + Debug + Default, F: Float + Clone + Debug + Default {
 
     /// Get an argument from its lookup string
-    pub fn get(&mut self, string: &str) -> Option<&Arg<I>> {
+    pub fn get(&mut self, string: &str) -> Option<&Arg<I, F>> {
         let arg = self.args.get(string);
         if arg.is_none() {
             info!("Attempted to get \"{}\", but could not", string);
@@ -87,7 +89,7 @@ impl <I>Args<I> where I: Integer + Clone + Debug + Default {
 
     pub fn defaults() -> Self {
         Self {
-            args: IndexMap::<String, Arg<I>>::new()
+            args: IndexMap::<String, Arg<I, F>>::new()
         }
     }
 
@@ -107,13 +109,13 @@ impl <I>Args<I> where I: Integer + Clone + Debug + Default {
     }
 
     #[inline]
-    pub fn insert(&mut self, arg_name: &str, arg_data: ArgData<I>) {
+    pub fn insert(&mut self, arg_name: &str, arg_data: ArgData<I, F>) {
         self.args.insert(arg_name.to_owned(), Arg::from_argdata(arg_data));
     }
 
 
     #[inline]
-    pub fn insert_arg(&mut self, arg_name: &str, arg: Arg<I>) {
+    pub fn insert_arg(&mut self, arg_name: &str, arg: Arg<I, F>) {
         self.args.insert(arg_name.to_owned(), arg);
     }
 
