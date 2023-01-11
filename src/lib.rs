@@ -66,7 +66,7 @@ impl<'a> Args {
         T: 'static,
     {
         match self.0.get_mut(name) {
-            None => Err(NoSuchArg { name: name }),
+            None => Err(NoSuchArg { name }),
             Some(arg) => Ok(arg.get::<T>()?),
         }
     }
