@@ -64,7 +64,7 @@ impl Args {
             Some(value) => value.get::<T>(),
         }
     }
-    //
+
     // fn get_string(&mut self, name: &str) -> Option<&str> {
     //     // if let Some(v) = self.0.get::<String>(&name) {
     //     //     Some(v)
@@ -84,7 +84,7 @@ impl Args {
 
     pub fn all_used(&self) -> bool {
         for (_arg_name, arg) in &self.0 {
-            if arg.used {
+            if !arg.used {
                 return false;
             }
         }

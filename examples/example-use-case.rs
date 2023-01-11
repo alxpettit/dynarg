@@ -20,7 +20,7 @@ fn main() {
 
     // This is how you add arguments
     args.insert("thing_to_draw", Box::new("apple".to_owned()));
-    args.insert("size", Box::new(5.2));
+    args.insert("size", Box::new(5.2f32));
 
     draw(&mut args);
     if !args.all_used() {
