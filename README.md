@@ -10,12 +10,6 @@ use dynarg::{ArgData, Args};
 /// -- you can dynamically push arguments on the fly instead.
 /// This is useful when you need a consistent function signature for different types of functions,
 /// each needing different arguments
-use dynarg::*;
-
-/// Where normally you'd need to have a fixed set of arguments, each of which would be roughly fixed types
-/// -- you can dynamically push arguments on the fly instead.
-/// This is useful when you need a consistent function signature for different types of functions,
-/// each needing different arguments
 fn draw(args: &mut Args) {
     if let Some(arg) = args.get::<Fruit>("fruit_to_draw") {
         println!("I will draw {}!", arg.0);
