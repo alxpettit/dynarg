@@ -31,10 +31,22 @@ impl Arg {
         }
     }
 
-    fn get<T>(&self) -> Option<&T> where T: 'static {
-        self.data.0.downcast_ref::<T>()
+    fn get<T>(&mut self) -> Option<&T> where T: 'static {
+        match self.data.0.downcast_ref::<T>() {
+            Some(value) => {
+                self.used = true;
+                Some(value)
+            },
+            None => None
+        }
+    }
+
+    fn used(&self) -> bool {
+        self.used
     }
 }
+
+
 
 #[cfg(test)]
 mod tests {
@@ -43,9 +55,9 @@ mod tests {
     #[test]
     fn test_arg() {
         let a = 5;
-        let arg = Arg::new(Box::new(a));
-
-        println!("{:#?}", arg.get::<i32>());
+        let mut arg = Arg::new(Box::new(a));
+        assert_eq!(arg.get::<i32>(), Some(&5));
+        assert_eq!(arg.used(), true);
     }
 }
 
