@@ -105,7 +105,7 @@ macro_rules! insert_get_fn {
 impl<'a> Args<'a> {
     /// A convenience function for making a new empty `Args()`.
     /// In truth, it just calls `default()`
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
     }
 

@@ -2,7 +2,24 @@
 
 A simple dynamic argument system
 
-### Example
+### Basic example
+```rust
+use dynarg::Args;
+
+fn main() {
+    // Creating Args object
+    let mut args = Args::new();
+    // Inserting a string type
+    args.insert_string("greeting", String::from("hello world"));
+
+    // Retrieving
+    let out = args.get_string("greeting").unwrap();
+    println!("{}", out);
+}
+```
+
+### Less basic example
+
 ```rust
 use dynarg::{ArgData, Args};
 
@@ -49,3 +66,4 @@ fn main() {
 - [x] Add convenience functions (e.g. `get_string()`, `get_int()`)
 - [x] Properly document gotchas
 - [x] Add variant without `used()` functionality.
+- [x] Add more examples
