@@ -1,13 +1,18 @@
-// TODO: add convienence wrapper functions that can check for multiple
-
+use crate::DynArgError::{NoSuchArg, NotOfType};
 use indexmap::IndexMap;
-// use num::Float;
-// use num::Integer;
-use std::any::Any;
-// use std::borrow::BorrowMut;
-// use std::fmt::Debug;
+use snafu::prelude::*;
+use std::any::{type_name, Any};
 
 struct ArgData(Box<dyn Any>);
+
+#[derive(Debug, Snafu, PartialEq)]
+pub enum DynArgError {
+    #[snafu(display("No such arg: {}", name))]
+    NoSuchArg { name: String },
+
+    #[snafu(display("Not of type: {}", name))]
+    NotOfType { name: String },
+}
 
 struct Arg {
     data: ArgData,
@@ -54,13 +59,20 @@ impl Args {
     fn new() -> Self {
         Self::default()
     }
-    pub fn get<T>(&mut self, name: &str) -> Option<&T>
+    pub fn get<T>(&mut self, name: &str) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
         match self.0.get_mut(name) {
-            None => None,
-            Some(value) => value.get::<T>(),
+            None => Err(NoSuchArg {
+                name: name.to_string(),
+            }),
+            Some(arg) => match arg.get::<T>() {
+                Some(value) => Ok(value),
+                None => Err(NotOfType {
+                    name: type_name::<T>().to_string(),
+                }),
+            },
         }
     }
 
@@ -122,13 +134,13 @@ mod tests {
         let mut args = Args::default();
         args.insert("number".to_string(), Box::new(6));
         let result = args.get::<i32>("number");
-        assert_eq!(result, Some(&6));
+        assert_eq!(result, Ok(&6));
 
         let static_str = "A";
         args.insert("letter", Box::new(static_str));
         // Note! This actually produces a &&str,
         // as otherwise we would violate the Sized requirement on downcast_ref()
         let arg = args.get::<&str>("letter");
-        assert_eq!(arg, Some(&"A"));
+        assert_eq!(arg, Ok(&"A"));
     }
 }

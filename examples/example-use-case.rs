@@ -5,9 +5,9 @@ use dynarg::*;
 /// This is useful when you need a consistent function signature for different types of functions,
 /// each needing different arguments
 fn draw(args: &mut Args) {
-    if let Some(arg) = args.get::<Fruit>("fruit_to_draw") {
+    if let Ok(arg) = args.get::<Fruit>("fruit_to_draw") {
         println!("I will draw {}!", arg.0);
-        if let Some(size) = args.get::<f32>("size") {
+        if let Ok(size) = args.get::<f32>("size") {
             println!("with a size of {}", size);
         }
     } else {

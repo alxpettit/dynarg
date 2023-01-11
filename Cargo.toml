@@ -11,4 +11,4 @@ repository = "https://github.com/alxpettit/dynarg"
 
 [dependencies]
 indexmap = "1.9.2"
-#num = "0.4.0"
+snafu = "0.7.4"
