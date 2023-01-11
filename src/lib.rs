@@ -6,12 +6,12 @@ use std::any::{type_name, Any};
 struct ArgData(Box<dyn Any>);
 
 #[derive(Debug, Snafu, PartialEq)]
-pub enum DynArgError {
+pub enum DynArgError<'a> {
     #[snafu(display("No such arg: {}", name))]
-    NoSuchArg { name: String },
+    NoSuchArg { name: &'a str },
 
     #[snafu(display("Not of type: {}", name))]
-    NotOfType { name: String },
+    NotOfType { name: &'a str },
 }
 
 struct Arg {
@@ -44,7 +44,7 @@ impl Arg {
                 Ok(value)
             }
             None => Err(NotOfType {
-                name: type_name::<T>().to_string(),
+                name: type_name::<T>(),
             }),
         }
     }
@@ -57,31 +57,19 @@ impl Arg {
 #[derive(Default)]
 pub struct Args(IndexMap<String, Arg>);
 
-impl Args {
+impl<'a> Args {
     fn new() -> Self {
         Self::default()
     }
-    pub fn get<T>(&mut self, name: &str) -> Result<&T, DynArgError>
+    pub fn get<T>(&mut self, name: &'static str) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
         match self.0.get_mut(name) {
-            None => Err(NoSuchArg {
-                name: name.to_string(),
-            }),
+            None => Err(NoSuchArg { name: name }),
             Some(arg) => Ok(arg.get::<T>()?),
         }
     }
-
-    // fn get_string(&mut self, name: &str) -> Option<&str> {
-    //     // if let Some(v) = self.0.get::<String>(&name) {
-    //     //     Some(v)
-    //     // }
-    //     if let Some(v) = self.0.get::<String>(name) {
-    //         //println!("{:#?}", v);
-    //     }
-    //     None
-    // }
 
     pub fn insert<S>(&mut self, name: S, value: Box<dyn Any>)
     where
@@ -124,6 +112,10 @@ mod tests {
         let test2 = String::from("apple");
         let mut arg2 = Arg::new(Box::new(test2));
         assert_eq!(arg2.get::<String>(), Ok(&"apple".to_string()));
+
+        let test3 = String::from("apple");
+        let mut arg3 = Arg::new(Box::new(test3));
+        assert_eq!(arg3.get::<i32>(), Err(NotOfType { name: "i32" }));
     }
 
     #[test]
@@ -139,5 +131,14 @@ mod tests {
         // as otherwise we would violate the Sized requirement on downcast_ref()
         let arg = args.get::<&str>("letter");
         assert_eq!(arg, Ok(&"A"));
+
+        let arg2 = args.get::<&str>("nonexistent");
+
+        assert_eq!(
+            arg2,
+            Err(NoSuchArg {
+                name: "nonexistent"
+            })
+        );
     }
 }
