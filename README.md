@@ -43,8 +43,5 @@ fn main() {
 
 ## Todo
 
-- [ ] Replace `Option`s with `Result`s such that it's possible to identify whether the argument name didn't exist, or the type was wrong
-- [ ] Add `snafu`
-- [ ] Add convenience functions (e.g. `get_string()`, `get_int()`)
 - [ ] Properly document gotchas
 - [ ] Ass variant without `used()` functionality.

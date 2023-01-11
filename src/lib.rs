@@ -57,6 +57,18 @@ impl Arg {
 #[derive(Default)]
 pub struct Args<'a>(IndexMap<&'a str, Arg>);
 
+macro_rules! insert_get_fn {
+    ($insert_fn:ident, $get_fn:ident, $t:ty) => {
+        pub fn $insert_fn(&mut self, name: &'a str, value: $t) {
+            self.0.insert(name, Arg::new(Box::new(value)));
+        }
+
+        pub fn $get_fn(&mut self, name: &'a str) -> Result<&$t, DynArgError> {
+            self.get::<$t>(name)
+        }
+    };
+}
+
 impl<'a> Args<'a> {
     fn new() -> Self {
         Self::default()
@@ -90,13 +102,12 @@ impl<'a> Args<'a> {
         }
     }
 
-    pub fn insert_string(&mut self, name: &'a str, value: String) {
-        self.0.insert(name, Arg::new(Box::new(value)));
-    }
-
-    pub fn get_string(&mut self, name: &'a str) -> Result<&String, DynArgError> {
-        self.get::<String>(name)
-    }
+    insert_get_fn!(insert_string, get_string, String);
+    insert_get_fn!(insert_f32, get_f32, f32);
+    insert_get_fn!(insert_f64, get_f64, f64);
+    insert_get_fn!(insert_i32, get_i32, i32);
+    insert_get_fn!(insert_i64, get_i64, i64);
+    insert_get_fn!(insert_bool, get_bool, bool);
 }
 
 #[cfg(test)]
