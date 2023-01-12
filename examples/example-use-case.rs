@@ -5,7 +5,7 @@ use dynarg::*;
 /// This is useful when you need a consistent function signature for different types of functions,
 /// each needing different arguments
 fn draw(args: &mut Args) {
-    if let Ok(greeting) = args.get_string("greeting") {
+    if let Ok(greeting) = args.poke_string("greeting") {
         println!("{} world", greeting);
     }
     if let Ok(arg) = args.poke::<Fruit>("fruit_to_draw") {

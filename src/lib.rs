@@ -3,7 +3,8 @@ use indexmap::IndexMap;
 use snafu::prelude::*;
 use std::any::{type_name, Any};
 
-struct ArgData(Box<dyn Any>);
+#[derive(Debug)]
+pub struct ArgData(Box<dyn Any>);
 
 #[derive(Debug, Snafu, PartialEq)]
 pub enum DynArgError<'a> {
@@ -16,7 +17,7 @@ pub enum DynArgError<'a> {
 
 /// For storing a single argument.
 /// Stores a `Box<>` to argument variable, as well as a `used` flag.
-struct Arg {
+pub struct Arg {
     data: ArgData,
     #[cfg(feature = "used")]
     used: bool,
@@ -25,7 +26,7 @@ struct Arg {
 impl Arg {
     /// Create new Arg struct, moving ownership of Box pointer
     /// to an internal dynamically typed Any-trait variable.
-    fn new(arg: Box<dyn Any>) -> Self {
+    pub fn new(arg: Box<dyn Any>) -> Self {
         Self {
             data: ArgData(arg),
             #[cfg(feature = "used")]
@@ -34,7 +35,7 @@ impl Arg {
     }
 
     /// Like `new()`, but accepts an `ArgData()` instead of a raw `Box<dyn Any>`
-    fn from_argdata(arg_data: ArgData) -> Self {
+    pub fn from_argdata(arg_data: ArgData) -> Self {
         Self {
             data: arg_data,
             #[cfg(feature = "used")]
@@ -46,7 +47,7 @@ impl Arg {
     /// Like `get()`, but marks the value as `used`.
     /// Because it changes `self`, it requires mutable access to self.
     /// This, of course, may make it unusable for some use cases.
-    fn poke<T>(&mut self) -> Result<&T, DynArgError>
+    pub fn poke<T>(&mut self) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
@@ -62,13 +63,13 @@ impl Arg {
     }
 
     /// Retrieve a struct's inner value.
-    /// It's recommended to _explicitly_ specify type via generics, e.g.:
+    /// It's recommended to _explicitly_ specify type, e.g.:
     /// ```rust
-    /// use dynarg::Args;
-    /// let mut arg = Arg::new::<i32>(42);
+    /// use dynarg::Arg;
+    /// let mut arg = Arg::new(Box::new(42i32));
     /// let arg = arg.get::<i32>();
     /// ```
-    fn get<T>(&self) -> Result<&T, DynArgError>
+    pub fn get<T>(&self) -> Result<&T, DynArgError>
     where
         T: 'static,
     {
@@ -81,7 +82,7 @@ impl Arg {
     }
 
     #[cfg(feature = "used")]
-    fn used(&self) -> bool {
+    pub fn used(&self) -> bool {
         self.used
     }
 }
@@ -90,13 +91,17 @@ impl Arg {
 pub struct Args<'a>(IndexMap<&'a str, Arg>);
 
 macro_rules! insert_get_fn {
-    ($insert_fn:ident, $get_fn:ident, $t:ty) => {
+    ($insert_fn:ident, $get_fn:ident, $poke_fn: ident, $t:ty) => {
         pub fn $insert_fn(&mut self, name: &'a str, value: $t) {
             self.0.insert(name, Arg::new(Box::new(value)));
         }
 
         pub fn $get_fn(&mut self, name: &'a str) -> Result<&$t, DynArgError> {
             self.get::<$t>(name)
+        }
+
+        pub fn $poke_fn(&mut self, name: &'a str) -> Result<&$t, DynArgError> {
+            self.poke::<$t>(name)
         }
     };
 }
@@ -171,12 +176,16 @@ impl<'a> Args<'a> {
         }
     }
 
-    insert_get_fn!(insert_string, get_string, String);
-    insert_get_fn!(insert_f32, get_f32, f32);
-    insert_get_fn!(insert_f64, get_f64, f64);
-    insert_get_fn!(insert_i32, get_i32, i32);
-    insert_get_fn!(insert_i64, get_i64, i64);
-    insert_get_fn!(insert_bool, get_bool, bool);
+    pub fn iter(&self) -> impl Iterator<Item = (&&str, &Arg)> {
+        self.0.iter()
+    }
+
+    insert_get_fn!(insert_string, get_string, poke_string, String);
+    insert_get_fn!(insert_f32, get_f32, poke_f32, f32);
+    insert_get_fn!(insert_f64, get_f64, poke_f64, f64);
+    insert_get_fn!(insert_i32, get_i32, poke_i32, i32);
+    insert_get_fn!(insert_i64, get_i64, poke_i64, i64);
+    insert_get_fn!(insert_bool, get_bool, poke_bool, bool);
 }
 
 #[cfg(test)]
