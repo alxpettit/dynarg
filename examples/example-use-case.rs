@@ -1,4 +1,4 @@
-use dynarg::*;
+use dynarg::Args;
 
 /// Where normally you'd need to have a fixed set of arguments, each of which would be roughly fixed types
 /// -- you can dynamically push arguments on the fly instead.

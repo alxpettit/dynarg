@@ -1,14 +1,13 @@
 [package]
 author = "Alexandria P."
 name = "dynarg"
-version = "2.1.2"
+version = "2.1.3"
 edition = "2021"
 description = "A simple mechanism for dynamic robust argument handling"
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/alxpettit/dynarg"
 keywords = ["argument", "dynamic", "arguments", "dispatch"]
 categories = ["data-structures", "config", "rust-patterns"]
-
 
 [dependencies]
 indexmap = "1.9.2"
@@ -23,3 +22,25 @@ skeptic = "0.13"
 
 [dev-dependencies]
 skeptic = "0.13"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+required-features = ["used"]
+
+[[example]]
+name = "example-use-case"
+path = "examples/example-use-case.rs"
+required-features = ["used"]
+
+
+[[example]]
+name = "poke"
+path = "examples/poke.rs"
+required-features = ["used"]
+
+
+[[test]]
+name = "with_used"
+path = "tests/with_used.rs"
+required-features = ["used"]

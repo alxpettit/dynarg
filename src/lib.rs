@@ -5,9 +5,11 @@ use snafu::prelude::*;
 use std::any::{type_name, Any};
 
 #[derive(Debug)]
+/// A struct for wrapping base argument data, of any type.
 pub struct ArgData(Box<dyn Any>);
 
 #[derive(Debug, Snafu, PartialEq)]
+/// An error struct for passing errors up the callchain.
 pub enum DynArgError<'a> {
     #[snafu(display("No such arg: {}", name))]
     NoSuchArg { name: &'a str },
@@ -89,26 +91,29 @@ impl Arg {
 }
 
 #[derive(Default)]
+/// Stores an `IndexMap` of `Args`. See examples.
 pub struct Args<'a>(IndexMap<&'a str, Arg>);
 
 macro_rules! insert_get_fn {
     ($insert_fn:ident, $get_fn:ident, $poke_fn: ident, $t:ty) => {
+        /// Dynamically generated inserter
         pub fn $insert_fn(&mut self, name: &'a str, value: $t) {
             self.0.insert(name, Arg::new(Box::new(value)));
         }
 
+        /// Dynamically generated getter
         pub fn $get_fn(&mut self, name: &'a str) -> Result<&$t, DynArgError> {
             self.get::<$t>(name)
         }
 
         #[cfg(feature = "used")]
+        /// Dynamically generated poker
         pub fn $poke_fn(&mut self, name: &'a str) -> Result<&$t, DynArgError> {
             self.poke::<$t>(name)
         }
     };
 }
 
-/// Stores an `IndexMap` of `Args`. See examples.
 impl<'a> Args<'a> {
     /// A convenience function for making a new empty `Args()`.
     /// In truth, it just calls `default()`
@@ -212,85 +217,4 @@ impl<'a> Args<'a> {
     insert_get_fn!(insert_i32, get_i32, poke_i32, i32);
     insert_get_fn!(insert_i64, get_i64, poke_i64, i64);
     insert_get_fn!(insert_bool, get_bool, poke_bool, bool);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_arg() {
-        let a = 5;
-        let mut arg = Arg::new(Box::new(a));
-        #[cfg(feature = "used")]
-        assert_eq!(arg.poke::<i32>(), Ok(&5));
-        #[cfg(feature = "used")]
-        assert_eq!(arg.used(), true);
-
-        let arg = Arg::new(Box::new(a));
-        #[cfg(feature = "used")]
-        assert_eq!(arg.used(), false);
-
-        let test = "apple";
-        let arg = Arg::new(Box::new(test));
-        assert_eq!(arg.get::<&str>(), Ok(&"apple"));
-
-        let test2 = String::from("apple");
-        let arg2 = Arg::new(Box::new(test2));
-        assert_eq!(arg2.get::<String>(), Ok(&"apple".to_string()));
-
-        let test3 = String::from("apple");
-        let arg3 = Arg::new(Box::new(test3));
-        assert_eq!(arg3.get::<i32>(), Err(NotOfType { name: "i32" }));
-    }
-
-    #[test]
-    fn test_args() {
-        let mut args = Args::default();
-        let arg_name = String::from("number");
-        args.insert(arg_name.as_str(), Box::new(6));
-        let result = args.get::<i32>("number");
-        assert_eq!(result, Ok(&6));
-
-        let static_str = "A";
-        args.insert("letter", Box::new(static_str));
-        let arg = args.get::<&str>("letter");
-        assert_eq!(arg, Ok(&"A"));
-
-        let arg2 = args.get::<&str>("nonexistent");
-
-        assert_eq!(
-            arg2,
-            Err(NoSuchArg {
-                name: "nonexistent"
-            })
-        );
-
-        let mut args = Args::default();
-        args.insert_i32("nice", 69);
-        args.insert_i32("wow", 42);
-        #[cfg(feature = "used")]
-        args.poke_i32("nice").unwrap();
-        #[cfg(feature = "used")]
-        assert_eq!(args.all_used(), false);
-        #[cfg(feature = "used")]
-        assert_eq!(args.iter_not_used_name().collect::<Vec<&str>>(), ["wow"]);
-
-        let mut args = Args::default();
-        args.insert_i32("nice", 69);
-        args.insert_i32("wow", 42);
-        #[cfg(feature = "used")]
-        args.poke_i32("nice").unwrap();
-        #[cfg(feature = "used")]
-        assert_eq!(args.all_used(), false);
-        #[cfg(feature = "used")]
-        assert_eq!(args.iter_used_name().collect::<Vec<&str>>(), ["nice"]);
-
-        let mut args = Args::default();
-        let mut name = String::new();
-        name.push_str("henlo");
-        args.insert_i32(name.as_str(), 56);
-        #[cfg(feature = "used")]
-        assert_eq!(args.poke_i32(name.as_str()).unwrap(), &56);
-    }
 }
