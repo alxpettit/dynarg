@@ -101,6 +101,7 @@ macro_rules! insert_get_fn {
             self.get::<$t>(name)
         }
 
+        #[cfg(feature = "used")]
         pub fn $poke_fn(&mut self, name: &'a str) -> Result<&$t, DynArgError> {
             self.poke::<$t>(name)
         }
@@ -221,11 +222,13 @@ mod tests {
     fn test_arg() {
         let a = 5;
         let mut arg = Arg::new(Box::new(a));
+        #[cfg(feature = "used")]
         assert_eq!(arg.poke::<i32>(), Ok(&5));
         #[cfg(feature = "used")]
         assert_eq!(arg.used(), true);
 
         let arg = Arg::new(Box::new(a));
+        #[cfg(feature = "used")]
         assert_eq!(arg.used(), false);
 
         let test = "apple";
@@ -266,21 +269,28 @@ mod tests {
         let mut args = Args::default();
         args.insert_i32("nice", 69);
         args.insert_i32("wow", 42);
+        #[cfg(feature = "used")]
         args.poke_i32("nice").unwrap();
+        #[cfg(feature = "used")]
         assert_eq!(args.all_used(), false);
+        #[cfg(feature = "used")]
         assert_eq!(args.iter_not_used_name().collect::<Vec<&str>>(), ["wow"]);
 
         let mut args = Args::default();
         args.insert_i32("nice", 69);
         args.insert_i32("wow", 42);
+        #[cfg(feature = "used")]
         args.poke_i32("nice").unwrap();
+        #[cfg(feature = "used")]
         assert_eq!(args.all_used(), false);
+        #[cfg(feature = "used")]
         assert_eq!(args.iter_used_name().collect::<Vec<&str>>(), ["nice"]);
 
         let mut args = Args::default();
         let mut name = String::new();
         name.push_str("henlo");
         args.insert_i32(name.as_str(), 56);
+        #[cfg(feature = "used")]
         assert_eq!(args.poke_i32(name.as_str()).unwrap(), &56);
     }
 }
