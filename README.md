@@ -2,6 +2,8 @@
 
 A simple dynamic argument system
 
+This API is at this point considered stable and reasonably mature. It is `forbid_unsafe`.
+
 ### Basic example
 ```rust
 use dynarg::Args;
@@ -55,7 +57,7 @@ fn draw(args: &mut Args) {
 struct Fruit<'a>(&'a str);
 
 fn main() {
-    let mut args = Args::default();
+   let mut args = Args::default();
 
     let apple = Fruit("apple");
     // This is how you add arguments

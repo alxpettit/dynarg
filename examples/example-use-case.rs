@@ -22,7 +22,9 @@ fn draw(args: &mut Args) {
 struct Fruit<'a>(&'a str);
 
 fn main() {
-    let mut args = Args::default();
+    // Much like Vec and others, creating `with_capacity` can prevent unnecessary
+    // repeated heap allocation calls, thus improving program performance.
+    let mut args = Args::with_capacity(100);
 
     let apple = Fruit("apple");
     // This is how you add arguments

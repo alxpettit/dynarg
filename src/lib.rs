@@ -1,3 +1,4 @@
+#[forbid(unsafe_code)]
 use crate::DynArgError::{NoSuchArg, NotOfType};
 use indexmap::IndexMap;
 use snafu::prelude::*;
@@ -116,7 +117,7 @@ impl<'a> Args<'a> {
 
     /// Initializes internal hashmap with a given capacity, to reduce required memory allocations.
     /// Potentially useful if you're planning to call `.push()` _a lot_.
-    fn with_capacity(capacity: usize) -> Self {
+    pub fn with_capacity(capacity: usize) -> Self {
         Self(IndexMap::with_capacity(capacity))
     }
 
@@ -160,12 +161,31 @@ impl<'a> Args<'a> {
     #[cfg(feature = "used")]
     /// Returns true if every argument is marked as "used". Returns false otherwise.
     pub fn all_used(&self) -> bool {
-        for (_arg_name, arg) in &self.0 {
-            if !arg.used {
-                return false;
+        self.iter().map(|x| x.1.used).all(|b| b)
+    }
+
+    #[cfg(feature = "used")]
+    /// Returns a iterator of arguments marked as not used.
+    pub fn get_not_used_name(&self) -> impl Iterator<Item = &str> {
+        self.iter().filter_map(|x| {
+            let (arg_name, arg) = x;
+            match arg.used {
+                false => Some(arg_name),
+                true => None,
             }
-        }
-        return true;
+        })
+    }
+
+    #[cfg(feature = "used")]
+    /// Returns an iterator of arguments marked as used.
+    pub fn get_used_name(&self) -> impl Iterator<Item = &str> {
+        self.iter().filter_map(|x| {
+            let (arg_name, arg) = x;
+            match arg.used {
+                true => Some(arg_name),
+                false => None,
+            }
+        })
     }
 
     #[cfg(feature = "used")]
@@ -176,8 +196,13 @@ impl<'a> Args<'a> {
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = (&&str, &Arg)> {
-        self.0.iter()
+    pub fn iter(&self) -> impl Iterator<Item = (&str, &Arg)> {
+        // iter() returns &&str normally,
+        // but we want &str, so we have to deref the nested pointer Y~Y
+        self.0.iter().map(|x| {
+            let (arg_name, arg) = x;
+            (*arg_name, arg)
+        })
     }
 
     insert_get_fn!(insert_string, get_string, poke_string, String);
@@ -196,20 +221,23 @@ mod tests {
     fn test_arg() {
         let a = 5;
         let mut arg = Arg::new(Box::new(a));
-        assert_eq!(arg.get::<i32>(), Ok(&5));
+        assert_eq!(arg.poke::<i32>(), Ok(&5));
         #[cfg(feature = "used")]
         assert_eq!(arg.used(), true);
 
+        let arg = Arg::new(Box::new(a));
+        assert_eq!(arg.used(), false);
+
         let test = "apple";
-        let mut arg = Arg::new(Box::new(test));
+        let arg = Arg::new(Box::new(test));
         assert_eq!(arg.get::<&str>(), Ok(&"apple"));
 
         let test2 = String::from("apple");
-        let mut arg2 = Arg::new(Box::new(test2));
+        let arg2 = Arg::new(Box::new(test2));
         assert_eq!(arg2.get::<String>(), Ok(&"apple".to_string()));
 
         let test3 = String::from("apple");
-        let mut arg3 = Arg::new(Box::new(test3));
+        let arg3 = Arg::new(Box::new(test3));
         assert_eq!(arg3.get::<i32>(), Err(NotOfType { name: "i32" }));
     }
 
@@ -223,8 +251,6 @@ mod tests {
 
         let static_str = "A";
         args.insert("letter", Box::new(static_str));
-        // Note! This actually produces a &&str,
-        // as otherwise we would violate the Sized requirement on downcast_ref()
         let arg = args.get::<&str>("letter");
         assert_eq!(arg, Ok(&"A"));
 
@@ -236,5 +262,19 @@ mod tests {
                 name: "nonexistent"
             })
         );
+
+        let mut args = Args::default();
+        args.insert_i32("nice", 69);
+        args.insert_i32("wow", 42);
+        args.poke_i32("nice").unwrap();
+        assert_eq!(args.all_used(), false);
+        assert_eq!(args.get_not_used_name().collect::<Vec<&str>>(), ["wow"]);
+
+        let mut args = Args::default();
+        args.insert_i32("nice", 69);
+        args.insert_i32("wow", 42);
+        args.poke_i32("nice").unwrap();
+        assert_eq!(args.all_used(), false);
+        assert_eq!(args.get_used_name().collect::<Vec<&str>>(), ["nice"]);
     }
 }
