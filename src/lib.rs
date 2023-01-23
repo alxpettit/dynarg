@@ -276,5 +276,11 @@ mod tests {
         args.poke_i32("nice").unwrap();
         assert_eq!(args.all_used(), false);
         assert_eq!(args.get_used_name().collect::<Vec<&str>>(), ["nice"]);
+
+        let mut args = Args::default();
+        let mut name = String::new();
+        name.push_str("henlo");
+        args.insert_i32(name.as_str(), 56);
+        assert_eq!(args.poke_i32(name.as_str()).unwrap(), &56);
     }
 }

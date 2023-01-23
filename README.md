@@ -10,10 +10,23 @@ A simple dynamic argument system
 Have you ever wanted to have multiple functions with the same signature,
 but with very different purposes and behavior?
 
-Maybe you want to make an image editing app.
-Maybe you want to make a Rust GCODE implementation.
-Maybe you want to make a modular shell program and dynamically pick arguments out like fruits off a berry bush,
+- Maybe you want to make an image editing app, with lots of tools.
+- Maybe you want to make a Rust GCODE implementation.
+- Maybe you just want to make a modular shell program and dynamically pick arguments out like fruits off a berry bush, 
 while keeping track of which ones haven't been used.
+
+Regardless, you probably want an API that can:
+
+- Match arguments to static strings, to avoid runtime overhead,
+while maintaining readability.
+- Potentially handle dynamic strings if needed.
+- Handle arbitrary argument types.
+- Provide convenience functions for working with arguments 
+-- e.g., wrapper functions for common types.
+
+If any of this applies to you, this is a library to consider.
+Note that for _very_ high-performance applications, 
+it might be better to roll your own custom use case with a Vec (ideally recycled!) of enum, to avoid dynamic dispatch.
 
 This API is at this point considered stable and reasonably mature. It is `forbid_unsafe`, and written in pure Rust.
 ### Basic example
@@ -138,3 +151,4 @@ PRs welcome :)
 - [x] Properly document gotchas
 - [x] Add variant without `used()` functionality.
 - [x] Add more examples
+- [ ] Benchmarks
