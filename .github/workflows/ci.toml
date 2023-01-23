@@ -1,0 +1,17 @@
+name = "CI"
+
+[[on]]
+event = "push"
+branches = ["master"]
+
+[[jobs]]
+name = "test"
+runs-on = "ubuntu-latest"
+
+[[jobs.steps]]
+uses = "actions/checkout@v2"
+
+[[jobs.steps]]
+name = "Run tests"
+run = "cargo test"
+
