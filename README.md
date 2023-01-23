@@ -60,15 +60,15 @@ fn main() {
 use dynarg::Args;
 
 fn main() {
-// Creating Args object
-let mut args = Args::new();
-// Inserting a string type
-args.insert_string("greeting", String::from("hello world"));
-// Inserting an i32 type
-args.insert_i32("meaning_of_life", 42);
-// There's a lot more types where that came from, BTW :)
-// (In fact, you can use any type that implements `Any`, which... I think should be any?)
-
+    // Creating Args object
+    let mut args = Args::new();
+    // Inserting a string type
+    args.insert_string("greeting", String::from("hello world"));
+    // Inserting an i32 type
+    args.insert_i32("meaning_of_life", 42);
+    // There's a lot more types where that came from, BTW :)
+    // (In fact, you can use any type that implements `Any`, which... I think should be any?)
+        
     // Retrieving string type (while marking used flag!)
     let out = args.poke_string("greeting").unwrap();
     println!("{}", out);
@@ -79,7 +79,7 @@ args.insert_i32("meaning_of_life", 42);
     // is that poke marks the status as used.
     // Note that this only exists if `used` feature is enabled for library.
     // Explicitly marking status is used is useful for sanity checking -- e.g.
-
+    
     // Checking used status of args is useful for catching
     // what would otherwise be silent or hard-to-catch errors
     if args.all_used() {
