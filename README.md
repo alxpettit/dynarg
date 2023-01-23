@@ -1,9 +1,21 @@
 # dynarg
 
+
+[![Build status](https://github.com/alxpettit/dynarg/workflows/CI/badge.svg)](https://github.com/alxpettit/dynarg/actions?query=workflow%3ACI)
+[![crates.io](https://img.shields.io/crates/v/dynarg.svg)](https://crates.io/crates/dynarg)
+[![Documentation](https://docs.rs/dynarg/badge.svg)](https://docs.rs/dynarg)
+
 A simple dynamic argument system
 
-This API is at this point considered stable and reasonably mature. It is `forbid_unsafe`.
+Have you ever wanted to have multiple functions with the same signature,
+but with very different purposes and behavior?
 
+Maybe you want to make an image editing app.
+Maybe you want to make a Rust GCODE implementation.
+Maybe you want to make a modular shell program and dynamically pick arguments out like fruits off a berry bush,
+while keeping track of which ones haven't been used.
+
+This API is at this point considered stable and reasonably mature. It is `forbid_unsafe`, and written in pure Rust.
 ### Basic example
 ```rust
 use dynarg::Args;
@@ -25,6 +37,45 @@ fn main() {
     // Retrieving i32
     let meaning_of_life = args.get_i32("meaning_of_life").unwrap();
     println!("The meaning of life is: {}", meaning_of_life);
+}
+```
+
+### Tracking which argument is used
+
+
+```rust
+use dynarg::Args;
+
+fn main() {
+// Creating Args object
+let mut args = Args::new();
+// Inserting a string type
+args.insert_string("greeting", String::from("hello world"));
+// Inserting an i32 type
+args.insert_i32("meaning_of_life", 42);
+// There's a lot more types where that came from, BTW :)
+// (In fact, you can use any type that implements `Any`, which... I think should be any?)
+
+    // Retrieving string type (while marking used flag!)
+    let out = args.poke_string("greeting").unwrap();
+    println!("{}", out);
+    // Retrieving i32 (also while marking used flag!)
+    let meaning_of_life = args.poke_i32("meaning_of_life").unwrap();
+    println!("The meaning of life is: {}", meaning_of_life);
+    // NOTE: the difference between poke and poke_* functions, and get and get_,
+    // is that poke marks the status as used.
+    // Note that this only exists if `used` feature is enabled for library.
+    // Explicitly marking status is used is useful for sanity checking -- e.g.
+
+    // Checking used status of args is useful for catching
+    // what would otherwise be silent or hard-to-catch errors
+    if args.all_used() {
+        println!("All used! :3");
+    } else {
+        for used_arg_name in args.get_not_used_name() {
+            println!("Arg: \"{}\" not used", used_arg_name);
+        }
+    }
 }
 ```
 
