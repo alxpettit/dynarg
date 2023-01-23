@@ -16,7 +16,7 @@ snafu = "0.7.4"
 
 [features]
 used = []
-#default = ["used"]
+default = ["used"]
 
 [build-dependencies]
 skeptic = "0.13"
