@@ -26,7 +26,7 @@ fn main() {
     if args.all_used() {
         println!("All used! :3");
     } else {
-        for used_arg_name in args.get_not_used_name() {
+        for used_arg_name in args.iter_not_used_name() {
             println!("Arg: \"{}\" not used", used_arg_name);
         }
     }

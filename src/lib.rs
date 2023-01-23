@@ -166,7 +166,7 @@ impl<'a> Args<'a> {
 
     #[cfg(feature = "used")]
     /// Returns a iterator of arguments marked as not used.
-    pub fn get_not_used_name(&self) -> impl Iterator<Item = &str> {
+    pub fn iter_not_used_name(&self) -> impl Iterator<Item = &str> {
         self.iter().filter_map(|x| {
             let (arg_name, arg) = x;
             match arg.used {
@@ -178,7 +178,7 @@ impl<'a> Args<'a> {
 
     #[cfg(feature = "used")]
     /// Returns an iterator of arguments marked as used.
-    pub fn get_used_name(&self) -> impl Iterator<Item = &str> {
+    pub fn iter_used_name(&self) -> impl Iterator<Item = &str> {
         self.iter().filter_map(|x| {
             let (arg_name, arg) = x;
             match arg.used {
@@ -268,14 +268,14 @@ mod tests {
         args.insert_i32("wow", 42);
         args.poke_i32("nice").unwrap();
         assert_eq!(args.all_used(), false);
-        assert_eq!(args.get_not_used_name().collect::<Vec<&str>>(), ["wow"]);
+        assert_eq!(args.iter_not_used_name().collect::<Vec<&str>>(), ["wow"]);
 
         let mut args = Args::default();
         args.insert_i32("nice", 69);
         args.insert_i32("wow", 42);
         args.poke_i32("nice").unwrap();
         assert_eq!(args.all_used(), false);
-        assert_eq!(args.get_used_name().collect::<Vec<&str>>(), ["nice"]);
+        assert_eq!(args.iter_used_name().collect::<Vec<&str>>(), ["nice"]);
 
         let mut args = Args::default();
         let mut name = String::new();
